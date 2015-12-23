@@ -80,14 +80,23 @@ class AdminSecurityController extends Controller
             $resetRoute = $this->generateUrl('fos_user_resetting_request');
         }
 
-        return $this->render('SonataUserBundle:Admin:Security/login.html.'.$this->container->getParameter('fos_user.template.engine'), array(
-                'last_username' => $lastUsername,
-                'error'         => $error,
-                'csrf_token'    => $csrfToken,
-                'base_template' => $this->get('sonata.admin.pool')->getTemplate('layout'),
-                'admin_pool'    => $this->get('sonata.admin.pool'),
-                'reset_route'   => $resetRoute, // TODO: Deprecated in 2.3, to be removed in 3.0
-            ));
+        // fox 2.x
+        if ($this->container->hasParameter('fos_user.template.engine')) {
+            $template = 'SonataUserBundle:Admin:Security/login.html.'.$this->container->getParameter('fos_user.template.engine');
+        // fos 1.x
+        } else {
+            $template = 'SonataUserBundle:Admin:Security/login.html.twig';
+        }
+
+
+        return $this->container->get('templating')->renderResponse($template, array(
+            'last_username' => $lastUsername,
+            'error'         => $error,
+            'csrf_token'    => $csrfToken,
+            'base_template' => $this->get('sonata.admin.pool')->getTemplate('layout'),
+            'admin_pool'    => $this->get('sonata.admin.pool'),
+            'reset_route'   => $resetRoute, // TODO: Deprecated in 2.3, to be removed in 3.0
+        ));
     }
 
     /**
@@ -100,7 +109,13 @@ class AdminSecurityController extends Controller
      */
     protected function renderLogin(array $data)
     {
-        $template = sprintf('FOSUserBundle:Security:login.html.%s', $this->container->getParameter('fos_user.template.engine'));
+        // fos 2.x
+        if ($this->container->hasParameter('fos_user.template.engine')) {
+            $template = sprintf('FOSUserBundle:Security:login.html.%s', $this->container->getParameter('fos_user.template.engine'));
+        // fos 1.x
+        } else {
+            $template = 'FOSUserBundle:Security:login.html.twig';
+        }
 
         return $this->render($template, $data);
     }
